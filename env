@@ -1,0 +1,2 @@
+JWT_SECRET=myjwtsecrettogeneretetoken
+LOG_LEVEL=DEBUG
