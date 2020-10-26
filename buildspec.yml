@@ -7,8 +7,14 @@ phases:
       - curl -sS -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.15.10/2020-02-22/bin/linux/amd64/kubectl
       - chmod +x ./kubectl ./aws-iam-authenticator
       - export PATH=$PWD/:$PATH
-      - apt-get update && apt-get -y install jq python3.7
-      - curl -O https://bootstrap.pypa.io/get-pip.py && python3 get-pip.py --user && pip3 install --upgrade awscli
+      - apt-get update && apt-get -y install jq build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
+      - wget https://www.python.org/ftp/python/3.8.0/Python-3.8.0.tgz
+      - tar -xf Python-3.8.0.tgz
+      - cd Python-3.8.0
+      - ./configure --enable-optimizations
+      - make -j 8
+      - make altinstall
+      - curl -O https://bootstrap.pypa.io/get-pip.py && python3.8 get-pip.py --user && python3.8 -m pip install --upgrade awscli
   pre_build:
       commands:
         - TAG="$REPOSITORY_NAME.$REPOSITORY_BRANCH.$ENVIRONMENT_NAME.$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
@@ -16,9 +22,9 @@ phases:
         - sed -i 's@JWT_SECRET_VALUE@'"$JWT_SECRET"'@' simple-jwt-api.yml
         - $(aws ecr get-login --no-include-email)
         - export KUBECONFIG=$HOME/.kube/config
-        - python3 -m pip install --upgrade pip
-        - python3 -m pip install -r requirements.txt
-        - python3 -m pytest test_main.py
+        - python3.8 -m pip install --upgrade pip
+        - python3.8 -m pip install -r requirements.txt
+        - python3.8 -m pytest test_main.py
   build:
     commands:
       - docker build --tag $REPOSITORY_URI:$TAG .
